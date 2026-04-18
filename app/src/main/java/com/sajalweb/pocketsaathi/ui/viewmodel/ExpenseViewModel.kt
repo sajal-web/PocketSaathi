@@ -23,8 +23,8 @@ data class ReportUiState(
     val reportType: ReportType = ReportType.WEEKLY,
     val totalSpending: Double = 0.0,
     val budgetLimit: Double = 0.0,
-    val savedAmount: Double = 0.0,       // positive = saved
-    val overspentAmount: Double = 0.0,   // positive = overspent
+    val savedAmount: Double = 0.0,
+    val overspentAmount: Double = 0.0,
     val isSaved: Boolean = false,
     val insightMessage: String = ""
 )
@@ -38,7 +38,7 @@ data class DashboardUiState(
     val budgetPercentUsed: Float = 0f,
     val weekTotal: Double = 0.0,
     val monthTotal: Double = 0.0,
-    val yearTotal: Double = 0.0,         // ✅ new
+    val yearTotal: Double = 0.0,
     val todayExpenses: List<Expense> = emptyList(),
     val recentExpenses: List<Expense> = emptyList(),
     val insights: List<Insight> = emptyList(),
@@ -46,7 +46,7 @@ data class DashboardUiState(
     val isSetupDone: Boolean = false,
     val weeklyBreakdown: List<DayTotal> = emptyList(),
     val isDataLoaded: Boolean = false,
-    val report: ReportUiState = ReportUiState() // ✅ new
+    val report: ReportUiState = ReportUiState()
 )
 
 data class AddExpenseUiState(
@@ -72,29 +72,31 @@ class ExpenseViewModel @Inject constructor(
         repository.getTodayTotal(),
         repository.getWeekTotal(),
         repository.getMonthTotal(),
-        repository.getYearTotal(),       // ✅ new
+        repository.getYearTotal(),
         prefs.monthlyLimit,
         prefs.budgetPercentage,
         prefs.isSetupDone,
         repository.getTodayExpenses(),
         repository.getRecentExpenses(),
+        repository.getWeeklyBreakdown()          // ✅ ADDED BACK
     ) { args ->
-        val todayTotal   = (args[0] as? Double) ?: 0.0
-        val weekTotal    = (args[1] as? Double) ?: 0.0
-        val monthTotal   = (args[2] as? Double) ?: 0.0
-        val yearTotal    = (args[3] as? Double) ?: 0.0
-        val monthlyLimit = args[4] as Double
-        val percentage   = args[5] as Int
-        val setupDone    = args[6] as Boolean
+        val todayTotal    = (args[0] as? Double) ?: 0.0
+        val weekTotal     = (args[1] as? Double) ?: 0.0
+        val monthTotal    = (args[2] as? Double) ?: 0.0
+        val yearTotal     = (args[3] as? Double) ?: 0.0
+        val monthlyLimit  = args[4] as Double
+        val percentage    = args[5] as Int
+        val setupDone     = args[6] as Boolean
         @Suppress("UNCHECKED_CAST")
         val todayExpenses = args[7] as List<Expense>
         @Suppress("UNCHECKED_CAST")
-        val recent = args[8] as List<Expense>
+        val recent        = args[8] as List<Expense>
+        @Suppress("UNCHECKED_CAST")
+        val weekly        = args[9] as List<DayTotal>
 
         val dailyBudget = calculator.getDailyBudget(monthlyLimit, percentage)
         val avgSpend    = repository.getAvgDailySpend() ?: 0.0
 
-        // ✅ Budget limits per period
         val daysInMonth  = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
         val weekBudget   = dailyBudget * 7
         val monthBudget  = dailyBudget * daysInMonth
@@ -115,6 +117,7 @@ class ExpenseViewModel @Inject constructor(
             healthScore       = insightEngine.getHealthScore(todayTotal, dailyBudget, avgSpend),
             insights          = insightEngine.getInsights(todayTotal, dailyBudget, avgSpend, weekTotal),
             isSetupDone       = setupDone,
+            weeklyBreakdown   = weekly,
             isDataLoaded      = true,
             report = buildReport(ReportType.WEEKLY, weekTotal, weekBudget)
         )
@@ -155,7 +158,6 @@ class ExpenseViewModel @Inject constructor(
         DashboardUiState()
     )
 
-    // ✅ Pure function — builds ReportUiState from spending vs budget
     private fun buildReport(
         type: ReportType,
         spending: Double,
@@ -179,7 +181,6 @@ class ExpenseViewModel @Inject constructor(
         )
     }
 
-    // ✅ Called from UI when user taps a segment
     fun selectReportType(type: ReportType) {
         viewModelScope.launch { prefs.saveReportType(type) }
     }

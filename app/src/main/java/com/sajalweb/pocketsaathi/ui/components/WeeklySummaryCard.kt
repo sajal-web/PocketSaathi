@@ -1,8 +1,8 @@
 package com.sajalweb.pocketsaathi.ui.components
 
-// ui/components/WeeklySummaryCard.kt
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -10,8 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,24 +24,22 @@ import java.util.Calendar
 fun WeeklySummaryCard(
     weekTotal: Double,
     monthTotal: Double,
-    breakdown: List<DayTotal>
+    breakdown: List<DayTotal>,
+    selectedDayIndex: Int? = null,
+    onDaySelected: (Int) -> Unit = {}
 ) {
     val dayLabels = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
-    val today = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1 // 0-indexed
+    val today = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1
 
-    // Build a 7-slot array for the week
     val dailyAmounts = remember(breakdown) {
-        val map = breakdown.associate { it.dayOfWeek.toInt() to it.total }
-        (0..6).map { map[it] ?: 0.0 }
+        val map = breakdown.associate {
+            val day = it.dayOfWeek.toIntOrNull() ?: 0
+            day to it.total
+        }
+        List(7) { index -> map[index] ?: 0.0 }
     }
-    val maxAmount = dailyAmounts.maxOrNull()?.takeIf { it > 0 } ?: 1.0
 
-    // Animate bars in
-    val animatedProgress by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = tween(800, easing = EaseOutCubic),
-        label = "bar_anim"
-    )
+    val maxAmount = dailyAmounts.maxOrNull()?.takeIf { it > 0 } ?: 1.0
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -52,33 +48,24 @@ fun WeeklySummaryCard(
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            // Header row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
+                    Text("This Week", color = TextSecondary)
                     Text(
-                        text = "This Week",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = TextSecondary
-                    )
-                    Text(
-                        text = "₹${"%.0f".format(weekTotal)}",
+                        "₹${"%.0f".format(weekTotal)}",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
                     )
                 }
+
                 Column(horizontalAlignment = Alignment.End) {
+                    Text("This Month", color = TextSecondary)
                     Text(
-                        text = "This Month",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = TextSecondary
-                    )
-                    Text(
-                        text = "₹${"%.0f".format(monthTotal)}",
+                        "₹${"%.0f".format(monthTotal)}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = Primary
@@ -86,28 +73,44 @@ fun WeeklySummaryCard(
                 }
             }
 
+            selectedDayIndex?.let { index ->
+                val amount = dailyAmounts[index]
+                Text(
+                    text = "${dayLabels[index]}: ₹${"%.0f".format(amount)}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Primary,
+                    modifier = Modifier.padding(top = 12.dp)
+                )
+            }
+
             Spacer(Modifier.height(20.dp))
 
-            // Bar chart
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp),
+                    .height(120.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.Bottom
             ) {
                 dailyAmounts.forEachIndexed { index, amount ->
+                    val isSelected = selectedDayIndex == index
                     val isToday = index == today
-                    val fraction = ((amount / maxAmount) * animatedProgress).toFloat()
-                        .coerceIn(0.01f, 1f)
+                    val fraction = if (maxAmount == 0.0) 0f else (amount / maxAmount).toFloat()
+                    val animatedHeight by animateFloatAsState(
+                        targetValue = fraction,
+                        animationSpec = tween(600),
+                        label = "bar_anim"
+                    )
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Bottom,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { onDaySelected(index) }
                     ) {
-                        // Amount label (only for today or highest bar)
-                        if (isToday && amount > 0) {
+                        if ((isSelected || isToday) && amount > 0) {
                             Text(
                                 text = "₹${"%.0f".format(amount)}",
                                 style = MaterialTheme.typography.labelSmall,
@@ -115,26 +118,35 @@ fun WeeklySummaryCard(
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
-                        Spacer(Modifier.height(2.dp))
+                        Spacer(Modifier.height(4.dp))
 
-                        // Bar
                         Canvas(
                             modifier = Modifier
-                                .fillMaxWidth(0.65f)
-                                .height((fraction * 72).dp)
+                                .fillMaxWidth(0.6f)
+                                .height((animatedHeight * 90).dp)
                         ) {
                             drawRoundRect(
-                                color = if (isToday) Primary else Primary.copy(alpha = 0.25f),
+                                color = when {
+                                    isSelected -> Primary
+                                    isToday -> Primary.copy(alpha = 0.6f)
+                                    else -> Primary.copy(alpha = 0.25f)
+                                },
                                 size = size,
                                 cornerRadius = CornerRadius(6.dp.toPx())
                             )
                         }
+
                         Spacer(Modifier.height(6.dp))
+
                         Text(
                             text = dayLabels[index].take(1),
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (isToday) Primary else TextSecondary,
-                            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal
+                            color = when {
+                                isSelected -> Primary
+                                isToday -> Primary.copy(alpha = 0.7f)
+                                else -> TextSecondary
+                            },
+                            fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal
                         )
                     }
                 }

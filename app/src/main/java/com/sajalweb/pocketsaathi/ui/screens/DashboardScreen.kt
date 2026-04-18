@@ -12,27 +12,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sajalweb.pocketsaathi.data.model.Expense
-import com.sajalweb.pocketsaathi.data.prefs.UserPrefsDataStore
 import com.sajalweb.pocketsaathi.ui.components.*
 import com.sajalweb.pocketsaathi.ui.viewmodel.ExpenseViewModel
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,9 +37,29 @@ fun DashboardScreen(
     val state by viewModel.dashboardState.collectAsStateWithLifecycle()
     var selectedExpenseForEdit by remember { mutableStateOf<Expense?>(null) }
     var showEditBudgetDialog by remember { mutableStateOf(false) }
+    var selectedDayIndex by remember { mutableStateOf<Int?>(null) }
+
+    val todayIndex = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1
+
+    val displayTodaySpent = remember(state.weeklyBreakdown, selectedDayIndex, state.todayTotal) {
+        if (selectedDayIndex == null) {
+            state.todayTotal
+        } else {
+            state.weeklyBreakdown
+                .find { it.dayOfWeek.toIntOrNull() == selectedDayIndex }
+                ?.total ?: 0.0
+        }
+    }
+
+    val displayRemaining = (state.dailyBudget - displayTodaySpent).coerceAtLeast(0.0)
+    val displayPercentUsed = if (state.dailyBudget > 0) {
+        (displayTodaySpent / state.dailyBudget).toFloat().coerceIn(0f, 1f)
+    } else 0f
+
     if (!state.isDataLoaded) {
         return
     }
+
     if (!state.isSetupDone) {
         IncomeSetupDialog { limit, percentage ->
             viewModel.saveBudgetConfig(limit, percentage)
@@ -77,6 +89,7 @@ fun DashboardScreen(
             ),
             windowInsets = WindowInsets(0, 0, 0, 0)
         )
+
         selectedExpenseForEdit?.let { expense ->
             EditExpenseDialog(
                 expense = expense,
@@ -84,6 +97,7 @@ fun DashboardScreen(
                 onUpdate = { updated -> viewModel.updateExpense(updated) }
             )
         }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -98,10 +112,22 @@ fun DashboardScreen(
         ) {
             item {
                 BudgetCard(
-                    todaySpent = state.todayTotal,
+                    todaySpent = displayTodaySpent,
                     dailyBudget = state.dailyBudget,
-                    remaining = state.remaining,
-                    percentUsed = state.budgetPercentUsed
+                    remaining = displayRemaining,
+                    percentUsed = displayPercentUsed
+                )
+            }
+
+            item {
+                WeeklySummaryCard(
+                    weekTotal = state.weekTotal,
+                    monthTotal = state.monthTotal,
+                    breakdown = state.weeklyBreakdown,
+                    selectedDayIndex = selectedDayIndex,
+                    onDaySelected = { index ->
+                        selectedDayIndex = if (selectedDayIndex == index) null else index
+                    }
                 )
             }
 
@@ -113,13 +139,6 @@ fun DashboardScreen(
                 item { InsightCards(insights = state.insights) }
             }
 
-            item {
-                WeeklySummaryCard(
-                    weekTotal = state.weekTotal,
-                    monthTotal = state.monthTotal,
-                    breakdown = state.weeklyBreakdown
-                )
-            }
             item {
                 ReportChartCard(
                     report = state.report,
