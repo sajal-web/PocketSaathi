@@ -70,12 +70,11 @@ fun SpendSenseApp() {
                         label = { Text(screen.title) },
                         selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                         onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                            if (currentDestination?.route != screen.route) {
+                                navController.navigate(screen.route) {
+                                    popUpTo(Screen.Dashboard.route)
+                                    launchSingleTop = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
                         }
                     )
@@ -103,7 +102,12 @@ fun SpendSenseApp() {
             composable(Screen.Dashboard.route) {
                 DashboardScreen(
                     modifier = Modifier,
-                    onAddExpense = { showAddExpenseSheet = true }
+                    onAddExpense = { showAddExpenseSheet = true },
+                    onNavigateToHistory = {
+                        navController.navigate(Screen.History.route) {
+                            launchSingleTop = true
+                        }
+                    }
                 )
             }
             composable(Screen.History.route) {
