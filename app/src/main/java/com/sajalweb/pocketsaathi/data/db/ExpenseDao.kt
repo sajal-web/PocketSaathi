@@ -47,6 +47,9 @@ interface ExpenseDao {
 
     @Query("SELECT * FROM expenses ORDER BY timestamp DESC LIMIT :limit")
     fun getRecentExpenses(limit: Int = 20): Flow<List<Expense>>
+
+    @Query("SELECT SUM(amount) FROM expenses WHERE timestamp >= :startOfYear")
+    fun getYearTotal(startOfYear: Long): Flow<Double?>
 }
 
 data class DayTotal(val dayOfWeek: String, val total: Double)

@@ -3,6 +3,7 @@ package com.sajalweb.pocketsaathi.data.prefs
 import android.content.Context
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
+import com.sajalweb.pocketsaathi.data.model.ReportType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -15,6 +16,9 @@ class UserPrefsDataStore(private val context: Context) {
         val MONTHLY_LIMIT = doublePreferencesKey("monthly_limit")
         val BUDGET_PERCENTAGE = intPreferencesKey("budget_percentage")
         val SETUP_DONE = booleanPreferencesKey("setup_done")
+
+        val SELECTED_REPORT_TYPE = stringPreferencesKey("selected_report_type")
+
     }
 
     val monthlyLimit: Flow<Double> = context.dataStore.data
@@ -35,5 +39,19 @@ class UserPrefsDataStore(private val context: Context) {
             it[BUDGET_PERCENTAGE] = percentage
             it[SETUP_DONE] = true
         }
+    }
+
+    val selectedReportType: Flow<ReportType> = context.dataStore.data
+        .catch { emit(emptyPreferences()) }
+        .map { prefs ->
+            when (prefs[SELECTED_REPORT_TYPE]) {
+                "MONTHLY" -> ReportType.MONTHLY
+                "YEARLY"  -> ReportType.YEARLY
+                else      -> ReportType.WEEKLY
+            }
+        }
+
+    suspend fun saveReportType(type: ReportType) {
+        context.dataStore.edit { it[SELECTED_REPORT_TYPE] = type.name }
     }
 }

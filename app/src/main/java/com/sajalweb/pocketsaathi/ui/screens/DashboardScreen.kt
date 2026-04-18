@@ -120,6 +120,12 @@ fun DashboardScreen(
                     breakdown = state.weeklyBreakdown
                 )
             }
+            item {
+                ReportChartCard(
+                    report = state.report,
+                    onToggleChange = { viewModel.selectReportType(it) }
+                )
+            }
 
             if (state.todayExpenses.isNotEmpty()) {
                 item {
