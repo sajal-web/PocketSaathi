@@ -1,88 +1,130 @@
 package com.sajalweb.pocketsaathi.ui.components
 
-// ui/components/ExpenseItem.kt
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import com.sajalweb.pocketsaathi.data.model.Expense
 import com.sajalweb.pocketsaathi.ui.theme.Primary
-import com.sajalweb.pocketsaathi.ui.theme.RedWarning
 import com.sajalweb.pocketsaathi.ui.theme.TextPrimary
 import com.sajalweb.pocketsaathi.ui.theme.TextSecondary
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpenseItem(
     expense: Expense,
     onDelete: () -> Unit,
     onEdit: () -> Unit
 ) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                onDelete()
-                true
-            } else false
-        },
-        positionalThreshold = { it * 0.4f }
-    )
+    val maxSwipe = 160.dp
+    var offsetX by remember { mutableStateOf(0f) }
+    val animatedOffset by animateDpAsState(targetValue = offsetX.dp, label = "")
 
-    SwipeToDismissBox(
-        state = dismissState,
-        enableDismissFromStartToEnd = false,
-        backgroundContent = {
-            // Red delete background revealed on swipe
-            Box(
+    val density = LocalDensity.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+    ) {
+
+        // Background Actions (Edit + Delete)
+        Row(
+            modifier = Modifier
+                .matchParentSize()
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color(0xFFFFEAEA))
+                .padding(end = 12.dp),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            // ️ Edit
+            IconButton(
+                onClick = onEdit,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(RedWarning.copy(alpha = 0.85f))
-                    .padding(end = 20.dp),
-                contentAlignment = Alignment.CenterEnd
+                    .size(48.dp)
+                    .background(Color.White, CircleShape)
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
-                    Text(
-                        text = "Delete",
-                        color = Color.White,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    tint = Color.Gray
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            //  Delete
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(Color.White, CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = Color.Red
+                )
             }
         }
-    ) {
-        ExpenseCard(
-            expense = expense,
-            onEdit = onEdit
-        )
+
+        //  Foreground Card (Swipeable)
+        Box(
+            modifier = Modifier
+                .offset(x = animatedOffset)
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            val threshold = with(density) { 80.dp.toPx() }
+
+                            offsetX = when {
+                                offsetX < -threshold -> -with(density) { maxSwipe.toPx() }
+                                else -> 0f
+                            }
+                        },
+                        onHorizontalDrag = { _, dragAmount ->
+                            val newOffset = offsetX + dragAmount
+
+                            offsetX = newOffset.coerceIn(
+                                -with(density) { maxSwipe.toPx() },
+                                0f
+                            )
+                        }
+                    )
+                }
+        ) {
+            ExpenseCard(
+                expense = expense,
+                onEdit = onEdit
+            )
+        }
     }
 }
 
 @Composable
-private fun ExpenseCard(expense: Expense,onEdit: () -> Unit) {
+private fun ExpenseCard(
+    expense: Expense,
+    onEdit: () -> Unit
+) {
     val timeFormat = remember { SimpleDateFormat("h:mm a", Locale.getDefault()) }
     val timeStr = remember(expense.timestamp) {
         timeFormat.format(Date(expense.timestamp))
@@ -90,13 +132,13 @@ private fun ExpenseCard(expense: Expense,onEdit: () -> Unit) {
 
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize(),
+            .fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(0.dp),
         border = androidx.compose.foundation.BorderStroke(
-            0.5.dp, Color.LightGray.copy(alpha = 0.4f)
+            0.5.dp,
+            Color.LightGray.copy(alpha = 0.4f)
         )
     ) {
         Row(
@@ -106,7 +148,8 @@ private fun ExpenseCard(expense: Expense,onEdit: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Category emoji bubble
+
+            // Emoji
             Box(
                 modifier = Modifier
                     .size(44.dp)
@@ -120,7 +163,7 @@ private fun ExpenseCard(expense: Expense,onEdit: () -> Unit) {
                 )
             }
 
-            // Description + category
+            // Info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = expense.description.ifBlank { expense.category.label },
@@ -130,7 +173,9 @@ private fun ExpenseCard(expense: Expense,onEdit: () -> Unit) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
                 Spacer(Modifier.height(2.dp))
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -146,6 +191,7 @@ private fun ExpenseCard(expense: Expense,onEdit: () -> Unit) {
                             color = Primary
                         )
                     }
+
                     Text(
                         text = "• $timeStr",
                         style = MaterialTheme.typography.labelSmall,
@@ -153,7 +199,8 @@ private fun ExpenseCard(expense: Expense,onEdit: () -> Unit) {
                     )
                 }
             }
-            // Right side: amount + edit button
+
+            // Amount + Edit
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "₹${"%.0f".format(expense.amount)}",
@@ -161,6 +208,7 @@ private fun ExpenseCard(expense: Expense,onEdit: () -> Unit) {
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
                 )
+
                 IconButton(onClick = onEdit) {
                     Icon(
                         imageVector = Icons.Default.Edit,
@@ -170,8 +218,6 @@ private fun ExpenseCard(expense: Expense,onEdit: () -> Unit) {
                     )
                 }
             }
-
-
         }
     }
 }
