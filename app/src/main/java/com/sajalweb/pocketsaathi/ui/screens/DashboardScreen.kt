@@ -41,6 +41,8 @@ fun DashboardScreen(
 ) {
     val state by viewModel.dashboardState.collectAsStateWithLifecycle()
     var showEditBudgetDialog by remember { mutableStateOf(false) }
+    val isLoaded = state.monthlyLimit > 0.0 || state.isSetupDone
+    if (!isLoaded) return
 
     if (!state.isSetupDone) {
         IncomeSetupDialog { limit, percentage ->
@@ -50,7 +52,9 @@ fun DashboardScreen(
     }
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .statusBarsPadding()
     ) {
         TopAppBar(
             title = {
@@ -66,7 +70,8 @@ fun DashboardScreen(
             },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = Color.Transparent
-            )
+            ),
+            windowInsets = WindowInsets(0, 0, 0, 0)
         )
 
         LazyColumn(
