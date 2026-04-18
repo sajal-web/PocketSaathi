@@ -1,6 +1,5 @@
 package com.sajalweb.pocketsaathi.ui.screens
 
-// ui/screens/IncomeSetupDialog.kt
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -21,14 +20,22 @@ import androidx.compose.ui.window.DialogProperties
 import com.sajalweb.pocketsaathi.ui.theme.Primary
 import com.sajalweb.pocketsaathi.ui.theme.TextPrimary
 import com.sajalweb.pocketsaathi.ui.theme.TextSecondary
+import java.util.Calendar
 
 @Composable
-fun IncomeSetupDialog(onSave: (Double) -> Unit) {
-    var incomeText by remember { mutableStateOf("") }
+fun IncomeSetupDialog(
+    onSave: (monthlyLimit: Double, budgetPercentage: Int) -> Unit
+) {
+    var expenseText by remember { mutableStateOf("") }
+    var percentage by remember { mutableStateOf(70) } // default 70%
     var errorMsg by remember { mutableStateOf("") }
 
-    val income = incomeText.toDoubleOrNull()
-    val isValid = income != null && income >= 1000.0
+    val monthlyLimit = expenseText.toDoubleOrNull()
+    val isValidLimit = monthlyLimit != null && monthlyLimit >= 100.0
+
+    val daysInMonth = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
+    val effectiveMonthly = (monthlyLimit ?: 0.0) * (percentage / 100.0)
+    val dailyBudget = effectiveMonthly / daysInMonth
 
     Dialog(
         onDismissRequest = {},
@@ -40,24 +47,22 @@ fun IncomeSetupDialog(onSave: (Double) -> Unit) {
             elevation = CardDefaults.cardElevation(0.dp)
         ) {
             Column(
-                modifier = Modifier.padding(28.dp),
+                modifier = Modifier
+                    .padding(28.dp)
+                    .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "💰",
-                    fontSize = 48.sp,
-                    textAlign = TextAlign.Center
-                )
+                Text("🎯", fontSize = 48.sp)
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    text = "Set Monthly Income",
+                    text = "Set Monthly Spending Limit",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = "We'll calculate your safe daily spending limit automatically.",
+                    text = "How much can you spend in a month? We'll split it into daily budget.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary,
                     textAlign = TextAlign.Center,
@@ -66,14 +71,14 @@ fun IncomeSetupDialog(onSave: (Double) -> Unit) {
                 Spacer(Modifier.height(24.dp))
 
                 OutlinedTextField(
-                    value = incomeText,
+                    value = expenseText,
                     onValueChange = {
-                        incomeText = it.filter { c -> c.isDigit() || c == '.' }
+                        expenseText = it.filter { c -> c.isDigit() || c == '.' }
                         errorMsg = ""
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Monthly Income (₹)") },
-                    placeholder = { Text("e.g. 50000") },
+                    label = { Text("Monthly Limit (₹)") },
+                    placeholder = { Text("e.g. 30000") },
                     prefix = { Text("₹ ", fontWeight = FontWeight.SemiBold, color = Primary) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
@@ -96,15 +101,57 @@ fun IncomeSetupDialog(onSave: (Double) -> Unit) {
                     )
                 }
 
-                // Live preview of daily budget
-                AnimatedVisibility(visible = isValid) {
-                    val daily = ((income ?: 0.0) * 0.70) /
-                            java.util.Calendar.getInstance()
-                                .getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
+                Spacer(Modifier.height(20.dp))
+
+                // Percentage selector – now moves 1 by 1
+                Text(
+                    text = "What percentage of this limit should be your daily spending budget?",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+                Spacer(Modifier.height(8.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("0%", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                    Slider(
+                        value = percentage.toFloat(),
+                        onValueChange = { percentage = it.toInt() },
+                        valueRange = 1f..100f,   // 👈 continuous 1-100
+                        colors = SliderDefaults.colors(
+                            thumbColor = Primary,
+                            activeTrackColor = Primary
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text("100%", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = Primary.copy(alpha = 0.1f)
+                    ) {
+                        Text(
+                            text = "$percentage%",
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                            fontWeight = FontWeight.Bold,
+                            color = Primary
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                AnimatedVisibility(visible = isValidLimit) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp)
                             .background(
                                 Primary.copy(alpha = 0.08f),
                                 RoundedCornerShape(12.dp)
@@ -118,13 +165,13 @@ fun IncomeSetupDialog(onSave: (Double) -> Unit) {
                             color = TextSecondary
                         )
                         Text(
-                            text = "₹${"%.0f".format(daily)} / day",
+                            text = "₹${"%.0f".format(dailyBudget)} / day",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
                             color = Primary
                         )
                         Text(
-                            text = "(70% of income ÷ days in month)",
+                            text = "($percentage% of ₹${"%.0f".format(monthlyLimit ?: 0.0)} ÷ $daysInMonth days)",
                             style = MaterialTheme.typography.labelSmall,
                             color = TextSecondary
                         )
@@ -132,12 +179,13 @@ fun IncomeSetupDialog(onSave: (Double) -> Unit) {
                 }
 
                 Spacer(Modifier.height(24.dp))
+
                 Button(
                     onClick = {
                         when {
-                            incomeText.isBlank() -> errorMsg = "Please enter your income"
-                            !isValid -> errorMsg = "Minimum income should be ₹1,000"
-                            else -> onSave(income!!)
+                            expenseText.isBlank() -> errorMsg = "Please enter your monthly limit"
+                            !isValidLimit -> errorMsg = "Minimum limit is ₹100"
+                            else -> onSave(monthlyLimit!!, percentage)
                         }
                     },
                     modifier = Modifier
@@ -146,11 +194,7 @@ fun IncomeSetupDialog(onSave: (Double) -> Unit) {
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Primary)
                 ) {
-                    Text(
-                        "Let's Go →",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    Text("Let's Go →", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

@@ -25,6 +25,7 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
+    modifier: Modifier = Modifier,
     viewModel: ExpenseViewModel = hiltViewModel(),
     onBack: () -> Unit
 ) {
@@ -58,38 +59,33 @@ fun HistoryScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Transaction History",
-                        fontWeight = FontWeight.SemiBold,
-                        color = TextPrimary
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = TextPrimary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFF5F5FF)
+    Column(modifier = modifier.fillMaxSize()) {
+        TopAppBar(
+            title = {
+                Text(
+                    "Transaction History",
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextPrimary
                 )
-            )
-        },
-        containerColor = Color(0xFFF5F5FF)
-    ) { padding ->
+            },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = TextPrimary
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color(0xFFF5F5FF)
+            ),
+            modifier = Modifier.statusBarsPadding() // 👈 Add this to align with status bar
+        )
 
         if (state.recentExpenses.isEmpty()) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -108,16 +104,14 @@ fun HistoryScreen(
                     )
                 }
             }
-            return@Scaffold
+            return@Column
         }
 
         LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 start = 16.dp, end = 16.dp,
-                top = 12.dp, bottom = 32.dp
+                top = 12.dp, bottom = 80.dp // bottom padding for FAB
             ),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -192,7 +186,7 @@ private fun SummaryChip(label: String, value: String, modifier: Modifier = Modif
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = Primary.copy(alpha = 0.08f)),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Column(

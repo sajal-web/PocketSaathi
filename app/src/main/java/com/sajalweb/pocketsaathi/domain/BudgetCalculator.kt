@@ -7,11 +7,10 @@ import javax.inject.Singleton
 @Singleton
 class BudgetCalculator @Inject constructor() {
 
-    fun getDailyBudget(monthlyIncome: Double): Double {
+    fun getDailyBudget(monthlyLimit: Double, percentage: Int): Double {
         val daysInMonth = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
-        // Reserve 30% for savings/rent
-        val spendable = monthlyIncome * 0.70
-        return spendable / daysInMonth
+        val effectiveMonthly = monthlyLimit * (percentage / 100.0)
+        return effectiveMonthly / daysInMonth
     }
 
     fun getRemainingToday(dailyBudget: Double, todaySpent: Double): Double {

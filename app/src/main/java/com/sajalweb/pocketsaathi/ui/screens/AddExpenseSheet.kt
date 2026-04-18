@@ -57,8 +57,14 @@ fun AddExpenseSheet(
     val state by viewModel.addState.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var selectedCategory by remember { mutableStateOf<Category?>(null) }
-    var manualAmount by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
+
+    // 👇 FALLBACK: treat plain number as amount
+    val fallbackAmount = remember(state.inputText) {
+        state.inputText.trim().toDoubleOrNull()
+    }
+    val effectiveAmount = state.parsed?.amount ?: fallbackAmount
+    val canSave = effectiveAmount != null
 
     LaunchedEffect(state.isSaved) {
         if (state.isSaved) {
@@ -83,8 +89,8 @@ fun AddExpenseSheet(
                 value = state.inputText,
                 onValueChange = viewModel::onInputChanged,
                 modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
-                placeholder = { Text("e.g. paid 250 for food", color = TextSecondary) },
-                label = { Text("What did you spend on?") },
+                placeholder = { Text("e.g. 250 or paid 250 for food", color = TextSecondary) },
+                label = { Text("Amount or description") },
                 shape = RoundedCornerShape(16.dp),
                 singleLine = false,
                 maxLines = 2,
@@ -94,14 +100,29 @@ fun AddExpenseSheet(
                 )
             )
 
-            // Smart parse preview
-            state.parsed?.let { parsed ->
-                AnimatedVisibility(visible = parsed.amount != null) {
-                    ParsePreviewCard(
-                        parsed = parsed,
-                        overrideCategory = selectedCategory,
-                        onCategoryChange = { selectedCategory = it }
-                    )
+            // Preview: show parsed OR fallback
+            AnimatedVisibility(visible = state.parsed != null || fallbackAmount != null) {
+                val displayAmount = effectiveAmount
+                val displayCategory = selectedCategory ?: state.parsed?.category ?: Category.OTHERS
+                val displayDescription = state.parsed?.description?.ifEmpty { "Expense" } ?: "Expense"
+
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Primary.copy(alpha = 0.08f)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(displayCategory.emoji, fontSize = 28.sp)
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(displayDescription, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                            Text(displayCategory.label, style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        }
+                        if (displayAmount != null) {
+                            Text("₹${displayAmount.toInt()}", style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold, color = Primary)
+                        }
+                    }
                 }
             }
 
@@ -127,13 +148,12 @@ fun AddExpenseSheet(
 
             Spacer(Modifier.height(20.dp))
 
-            // Save button
-            val canSave = state.parsed?.amount != null || manualAmount.toDoubleOrNull() != null
+            // Save button (enabled if we have an amount)
             Button(
                 onClick = {
-                    val amount = state.parsed?.amount ?: manualAmount.toDoubleOrNull() ?: return@Button
+                    val amount = effectiveAmount ?: return@Button
                     val category = selectedCategory ?: state.parsed?.category ?: Category.OTHERS
-                    val desc = state.parsed?.description?.ifEmpty { state.inputText } ?: state.inputText
+                    val desc = state.parsed?.description?.ifEmpty { "Expense" } ?: "Expense"
                     viewModel.saveExpense(amount, desc, category)
                 },
                 enabled = canSave,
@@ -141,34 +161,9 @@ fun AddExpenseSheet(
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Primary)
             ) {
-                Text("Save ₹${state.parsed?.amount?.toInt() ?: ""}", style = MaterialTheme.typography.titleMedium)
+                Text("Save ₹${effectiveAmount?.toInt() ?: ""}", style = MaterialTheme.typography.titleMedium)
             }
             Spacer(Modifier.height(8.dp))
-        }
-    }
-}
-
-@Composable
-fun ParsePreviewCard(
-    parsed: ParsedExpense,
-    overrideCategory: Category?,
-    onCategoryChange: (Category) -> Unit
-) {
-    val category = overrideCategory ?: parsed.category
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Primary.copy(alpha = 0.08f)),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(category.emoji, fontSize = 28.sp)
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(parsed.description, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-                Text(category.label, style = MaterialTheme.typography.labelSmall, color = TextSecondary)
-            }
-            Text("₹${parsed.amount?.toInt()}", style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold, color = Primary)
         }
     }
 }

@@ -12,21 +12,27 @@ val Context.dataStore by preferencesDataStore(name = "user_prefs")
 class UserPrefsDataStore(private val context: Context) {
 
     companion object {
-        val MONTHLY_INCOME = doublePreferencesKey("monthly_income")
+        val MONTHLY_LIMIT = doublePreferencesKey("monthly_limit")
+        val BUDGET_PERCENTAGE = intPreferencesKey("budget_percentage")
         val SETUP_DONE = booleanPreferencesKey("setup_done")
     }
 
-    val monthlyIncome: Flow<Double> = context.dataStore.data
+    val monthlyLimit: Flow<Double> = context.dataStore.data
         .catch { emit(emptyPreferences()) }
-        .map { it[MONTHLY_INCOME] ?: 0.0 }
+        .map { it[MONTHLY_LIMIT] ?: 0.0 }
+
+    val budgetPercentage: Flow<Int> = context.dataStore.data
+        .catch { emit(emptyPreferences()) }
+        .map { it[BUDGET_PERCENTAGE] ?: 70 }
 
     val isSetupDone: Flow<Boolean> = context.dataStore.data
         .catch { emit(emptyPreferences()) }
         .map { it[SETUP_DONE] ?: false }
 
-    suspend fun saveMonthlyIncome(income: Double) {
+    suspend fun saveBudgetConfig(monthlyLimit: Double, percentage: Int) {
         context.dataStore.edit {
-            it[MONTHLY_INCOME] = income
+            it[MONTHLY_LIMIT] = monthlyLimit
+            it[BUDGET_PERCENTAGE] = percentage
             it[SETUP_DONE] = true
         }
     }

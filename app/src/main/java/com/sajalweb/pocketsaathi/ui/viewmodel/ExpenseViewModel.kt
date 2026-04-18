@@ -56,7 +56,8 @@ class ExpenseViewModel @Inject constructor(
         repository.getTodayTotal(),
         repository.getWeekTotal(),
         repository.getMonthTotal(),
-        prefs.monthlyIncome,
+        prefs.monthlyLimit,      // now Double
+        prefs.budgetPercentage,  // new Int
         prefs.isSetupDone,
         repository.getTodayExpenses(),
         repository.getRecentExpenses(),
@@ -65,22 +66,23 @@ class ExpenseViewModel @Inject constructor(
         val todayTotal = (args[0] as? Double) ?: 0.0
         val weekTotal = (args[1] as? Double) ?: 0.0
         val monthTotal = (args[2] as? Double) ?: 0.0
-        val income = args[3] as Double
-        val setupDone = args[4] as Boolean
+        val monthlyLimit = args[3] as Double
+        val percentage = args[4] as Int
+        val setupDone = args[5] as Boolean
         @Suppress("UNCHECKED_CAST")
-        val todayExpenses = args[5] as List<Expense>
+        val todayExpenses = args[6] as List<Expense>
         @Suppress("UNCHECKED_CAST")
-        val recent = args[6] as List<Expense>
+        val recent = args[7] as List<Expense>
         @Suppress("UNCHECKED_CAST")
-        val weekly = args[7] as List<DayTotal>
+        val weekly = args[8] as List<DayTotal>
 
-        val dailyBudget = calculator.getDailyBudget(income)
+        val dailyBudget = calculator.getDailyBudget(monthlyLimit, percentage)
         val avgSpend = repository.getAvgDailySpend() ?: 0.0
 
         DashboardUiState(
             todayTotal = todayTotal,
             dailyBudget = dailyBudget,
-            monthlyIncome = income,
+            monthlyIncome = monthlyLimit,   // you may rename this field later
             remaining = calculator.getRemainingToday(dailyBudget, todayTotal),
             budgetPercentUsed = calculator.getBudgetPercentUsed(dailyBudget, todayTotal),
             weekTotal = weekTotal,
@@ -93,7 +95,6 @@ class ExpenseViewModel @Inject constructor(
             weeklyBreakdown = weekly
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DashboardUiState())
-
     // --- Add Expense ---
     fun onInputChanged(text: String) {
         _addState.update { it.copy(inputText = text, parsed = null) }
@@ -129,8 +130,8 @@ class ExpenseViewModel @Inject constructor(
         viewModelScope.launch { repository.updateExpense(expense) }
     }
 
-    fun saveMonthlyIncome(income: Double) {
-        viewModelScope.launch { prefs.saveMonthlyIncome(income) }
+    fun saveBudgetConfig(monthlyLimit: Double, percentage: Int) {
+        viewModelScope.launch { prefs.saveBudgetConfig(monthlyLimit, percentage) }
     }
 
     fun resetAddState() {
