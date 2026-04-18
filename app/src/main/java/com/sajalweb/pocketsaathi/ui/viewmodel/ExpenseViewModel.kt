@@ -31,7 +31,8 @@ data class DashboardUiState(
     val insights: List<Insight> = emptyList(),
     val healthScore: Int = 75,
     val isSetupDone: Boolean = false,
-    val weeklyBreakdown: List<DayTotal> = emptyList()
+    val weeklyBreakdown: List<DayTotal> = emptyList(),
+    val isDataLoaded: Boolean = false
 )
 
 data class AddExpenseUiState(
@@ -93,7 +94,8 @@ class ExpenseViewModel @Inject constructor(
             healthScore = insightEngine.getHealthScore(todayTotal, dailyBudget, avgSpend),
             insights = insightEngine.getInsights(todayTotal, dailyBudget, avgSpend, weekTotal),
             isSetupDone = setupDone,
-            weeklyBreakdown = weekly
+            weeklyBreakdown = weekly,
+            isDataLoaded = true
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DashboardUiState())
     // --- Add Expense ---

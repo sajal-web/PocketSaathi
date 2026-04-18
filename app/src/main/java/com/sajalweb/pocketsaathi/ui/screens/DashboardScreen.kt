@@ -24,11 +24,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sajalweb.pocketsaathi.data.model.Expense
+import com.sajalweb.pocketsaathi.data.prefs.UserPrefsDataStore
 import com.sajalweb.pocketsaathi.ui.components.*
 import com.sajalweb.pocketsaathi.ui.viewmodel.ExpenseViewModel
 
@@ -43,9 +45,9 @@ fun DashboardScreen(
     val state by viewModel.dashboardState.collectAsStateWithLifecycle()
     var selectedExpenseForEdit by remember { mutableStateOf<Expense?>(null) }
     var showEditBudgetDialog by remember { mutableStateOf(false) }
-    val isLoaded = state.monthlyLimit > 0.0 || state.isSetupDone
-    if (!isLoaded) return
-
+    if (!state.isDataLoaded) {
+        return
+    }
     if (!state.isSetupDone) {
         IncomeSetupDialog { limit, percentage ->
             viewModel.saveBudgetConfig(limit, percentage)
