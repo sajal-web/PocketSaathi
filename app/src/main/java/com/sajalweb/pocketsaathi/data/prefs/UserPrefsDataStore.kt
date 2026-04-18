@@ -16,9 +16,9 @@ class UserPrefsDataStore(private val context: Context) {
         val MONTHLY_LIMIT = doublePreferencesKey("monthly_limit")
         val BUDGET_PERCENTAGE = intPreferencesKey("budget_percentage")
         val SETUP_DONE = booleanPreferencesKey("setup_done")
-
         val SELECTED_REPORT_TYPE = stringPreferencesKey("selected_report_type")
-
+        val BUDGET_START_DATE = longPreferencesKey("budget_start_date")
+        val BUDGET_END_DATE = longPreferencesKey("budget_end_date")
     }
 
     val monthlyLimit: Flow<Double> = context.dataStore.data
@@ -33,11 +33,18 @@ class UserPrefsDataStore(private val context: Context) {
         .catch { emit(emptyPreferences()) }
         .map { it[SETUP_DONE] ?: false }
 
-    suspend fun saveBudgetConfig(monthlyLimit: Double, percentage: Int) {
+    suspend fun saveBudgetConfig(
+        monthlyLimit: Double,
+        percentage: Int,
+        startDate: Long,
+        endDate: Long
+    ) {
         context.dataStore.edit {
             it[MONTHLY_LIMIT] = monthlyLimit
             it[BUDGET_PERCENTAGE] = percentage
             it[SETUP_DONE] = true
+            it[BUDGET_START_DATE] = startDate
+            it[BUDGET_END_DATE] = endDate
         }
     }
 
@@ -54,4 +61,12 @@ class UserPrefsDataStore(private val context: Context) {
     suspend fun saveReportType(type: ReportType) {
         context.dataStore.edit { it[SELECTED_REPORT_TYPE] = type.name }
     }
+
+    val budgetStartDate: Flow<Long> = context.dataStore.data
+        .catch { emit(emptyPreferences()) }
+        .map { it[BUDGET_START_DATE] ?: 0L }
+
+    val budgetEndDate: Flow<Long> = context.dataStore.data
+        .catch { emit(emptyPreferences()) }
+        .map { it[BUDGET_END_DATE] ?: 0L }
 }

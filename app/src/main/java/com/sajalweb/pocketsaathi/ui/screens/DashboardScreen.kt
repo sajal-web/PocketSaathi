@@ -61,8 +61,8 @@ fun DashboardScreen(
     }
 
     if (!state.isSetupDone) {
-        IncomeSetupDialog { limit, percentage ->
-            viewModel.saveBudgetConfig(limit, percentage)
+        IncomeSetupDialog { limit, percentage, startDate, endDate ->
+            viewModel.saveBudgetConfig(limit, percentage, startDate, endDate)
         }
         return
     }
@@ -175,11 +175,20 @@ fun DashboardScreen(
     }
 
     if (showEditBudgetDialog) {
+
+        val today = System.currentTimeMillis()
+
+        val endOfMonth = Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
+        }.timeInMillis
+
         EditBudgetDialog(
             currentLimit = state.monthlyLimit,
             currentPercentage = state.budgetPercentage,
-            onSave = { limit, percentage ->
-                viewModel.saveBudgetConfig(limit, percentage)
+            currentStartDate = today,
+            currentEndDate = endOfMonth,
+            onSave = { limit, percentage, startDate, endDate ->
+                viewModel.saveBudgetConfig(limit, percentage, startDate, endDate)
                 showEditBudgetDialog = false
             },
             onDismiss = { showEditBudgetDialog = false }

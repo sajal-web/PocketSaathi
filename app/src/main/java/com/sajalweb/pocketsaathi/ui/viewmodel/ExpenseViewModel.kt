@@ -33,7 +33,10 @@ data class DashboardUiState(
     val todayTotal: Double = 0.0,
     val dailyBudget: Double = 0.0,
     val monthlyLimit: Double = 0.0,
+    val avgDailySpend: Double = 0.0,
     val budgetPercentage: Int = 70,
+    val budgetStartDate: Long = 0L,
+    val budgetEndDate: Long = 0L,
     val remaining: Double = 0.0,
     val budgetPercentUsed: Float = 0f,
     val weekTotal: Double = 0.0,
@@ -78,7 +81,9 @@ class ExpenseViewModel @Inject constructor(
         prefs.isSetupDone,
         repository.getTodayExpenses(),
         repository.getRecentExpenses(),
-        repository.getWeeklyBreakdown()          // ✅ ADDED BACK
+        repository.getWeeklyBreakdown(),
+        prefs.budgetStartDate,
+        prefs.budgetEndDate
     ) { args ->
         val todayTotal    = (args[0] as? Double) ?: 0.0
         val weekTotal     = (args[1] as? Double) ?: 0.0
@@ -93,8 +98,14 @@ class ExpenseViewModel @Inject constructor(
         val recent        = args[8] as List<Expense>
         @Suppress("UNCHECKED_CAST")
         val weekly        = args[9] as List<DayTotal>
+        val startDate     = args[10] as Long
+        val endDate       = args[11] as Long
 
-        val dailyBudget = calculator.getDailyBudget(monthlyLimit, percentage)
+        val dailyBudget = if (startDate > 0 && endDate > 0) {
+            calculator.getDailyBudget(monthlyLimit, percentage, startDate, endDate)
+        } else {
+            calculator.getDailyBudget(monthlyLimit, percentage)
+        }
         val avgSpend    = repository.getAvgDailySpend() ?: 0.0
 
         val daysInMonth  = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
@@ -214,8 +225,10 @@ class ExpenseViewModel @Inject constructor(
         viewModelScope.launch { repository.updateExpense(expense) }
     }
 
-    fun saveBudgetConfig(monthlyLimit: Double, percentage: Int) {
-        viewModelScope.launch { prefs.saveBudgetConfig(monthlyLimit, percentage) }
+    fun saveBudgetConfig(monthlyLimit: Double, percentage: Int, startDate: Long, endDate: Long) {
+        viewModelScope.launch {
+            prefs.saveBudgetConfig(monthlyLimit, percentage, startDate, endDate)
+        }
     }
 
     fun resetAddState() {
