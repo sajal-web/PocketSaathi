@@ -16,7 +16,8 @@ import com.sajalweb.pocketsaathi.data.model.Category
 import com.sajalweb.pocketsaathi.data.model.Expense
 import com.sajalweb.pocketsaathi.ui.theme.Primary
 import com.sajalweb.pocketsaathi.ui.theme.TextSecondary
-import kotlinx.coroutines.launch
+import com.sajalweb.pocketsaathi.utils.formatAmount
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,7 +26,9 @@ fun EditExpenseDialog(
     onDismiss: () -> Unit,
     onUpdate: (Expense) -> Unit
 ) {
-    var amountText by remember { mutableStateOf(expense.amount.toString()) }
+    var amountText by remember {
+        mutableStateOf(formatAmount(expense.amount))
+    }
     var description by remember { mutableStateOf(expense.description) }
     var note by remember { mutableStateOf(expense.note) }
     var selectedCategory by remember { mutableStateOf(expense.category) }
@@ -105,7 +108,7 @@ fun EditExpenseDialog(
                         onClick = {
                             if (isValid) {
                                 val updated = expense.copy(
-                                    amount = amount!!,
+                                    amount = amount,
                                     description = description,
                                     category = selectedCategory,
                                     note = note

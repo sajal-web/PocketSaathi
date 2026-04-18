@@ -19,6 +19,7 @@ import com.sajalweb.pocketsaathi.ui.theme.Primary
 import com.sajalweb.pocketsaathi.ui.theme.TextPrimary
 import com.sajalweb.pocketsaathi.ui.theme.TextSecondary
 import java.util.Calendar
+import com.sajalweb.pocketsaathi.utils.formatAmount
 
 @Composable
 fun EditBudgetDialog(
@@ -27,7 +28,7 @@ fun EditBudgetDialog(
     onSave: (Double, Int) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var expenseText by remember { mutableStateOf(currentLimit.toString()) }
+    var expenseText by remember { mutableStateOf(formatAmount(currentLimit)) }
     var percentage by remember { mutableStateOf(currentPercentage) }
     var errorMsg by remember { mutableStateOf("") }
 
