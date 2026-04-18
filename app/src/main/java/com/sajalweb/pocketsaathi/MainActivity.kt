@@ -1,9 +1,11 @@
 package com.sajalweb.pocketsaathi
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -47,10 +49,12 @@ fun SpendSenseApp() {
     var showAddExpenseSheet by remember { mutableStateOf(false) }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 0.dp
+                tonalElevation = 0.dp,
+                windowInsets = WindowInsets(0, 0, 0, 0)
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
@@ -92,10 +96,13 @@ fun SpendSenseApp() {
             navController = navController,
             startDestination = Screen.Dashboard.route,
             modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
         ) {
+            Log.d(paddingValues.toString(), "DashboardScreen")
             composable(Screen.Dashboard.route) {
                 DashboardScreen(
-                    modifier = Modifier.padding(paddingValues),
+                    modifier = Modifier,
                     onAddExpense = { showAddExpenseSheet = true }
                 )
             }

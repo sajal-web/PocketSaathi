@@ -79,8 +79,7 @@ fun HistoryScreen(
             },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = Color(0xFFFFFFFF)
-            ),
-            modifier = Modifier.statusBarsPadding() // align with status bar
+            )
         )
 
         if (state.recentExpenses.isEmpty()) {

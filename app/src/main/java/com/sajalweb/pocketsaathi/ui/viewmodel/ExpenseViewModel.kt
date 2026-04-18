@@ -20,7 +20,8 @@ import javax.inject.Inject
 data class DashboardUiState(
     val todayTotal: Double = 0.0,
     val dailyBudget: Double = 0.0,
-    val monthlyIncome: Double = 0.0,
+    val monthlyLimit: Double = 0.0,
+    val budgetPercentage: Int = 70,
     val remaining: Double = 0.0,
     val budgetPercentUsed: Float = 0f,
     val weekTotal: Double = 0.0,
@@ -82,7 +83,7 @@ class ExpenseViewModel @Inject constructor(
         DashboardUiState(
             todayTotal = todayTotal,
             dailyBudget = dailyBudget,
-            monthlyIncome = monthlyLimit,   // you may rename this field later
+            monthlyLimit = monthlyLimit,   // you may rename this field later
             remaining = calculator.getRemainingToday(dailyBudget, todayTotal),
             budgetPercentUsed = calculator.getBudgetPercentUsed(dailyBudget, todayTotal),
             weekTotal = weekTotal,
