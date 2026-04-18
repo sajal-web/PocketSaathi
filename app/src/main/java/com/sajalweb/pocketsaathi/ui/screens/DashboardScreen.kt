@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,7 +39,7 @@ fun DashboardScreen(
     var selectedExpenseForEdit by remember { mutableStateOf<Expense?>(null) }
     var showEditBudgetDialog by remember { mutableStateOf(false) }
     var selectedDayIndex by remember { mutableStateOf<Int?>(null) }
-
+    var showLegalDialog by remember { mutableStateOf(false) }
     val todayIndex = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1
 
     val displayTodaySpent = remember(state.weeklyBreakdown, selectedDayIndex, state.todayTotal) {
@@ -80,6 +81,9 @@ fun DashboardScreen(
                 )
             },
             actions = {
+                IconButton(onClick = { showLegalDialog = true }) {
+                    Icon(Icons.Default.Info, contentDescription = "Legal")
+                }
                 IconButton(onClick = { showEditBudgetDialog = true }) {
                     Icon(Icons.Default.Edit, contentDescription = "Edit Budget")
                 }
@@ -172,6 +176,12 @@ fun DashboardScreen(
                 }
             }
         }
+    }
+
+    if (showLegalDialog) {
+        LegalDialog(
+            onDismiss = { showLegalDialog = false }
+        )
     }
 
     if (showEditBudgetDialog) {
