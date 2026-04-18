@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sajalweb.pocketsaathi.data.model.Expense
 import com.sajalweb.pocketsaathi.ui.components.*
 import com.sajalweb.pocketsaathi.ui.viewmodel.ExpenseViewModel
 
@@ -40,6 +41,7 @@ fun DashboardScreen(
     onNavigateToHistory: () -> Unit = {}
 ) {
     val state by viewModel.dashboardState.collectAsStateWithLifecycle()
+    var selectedExpenseForEdit by remember { mutableStateOf<Expense?>(null) }
     var showEditBudgetDialog by remember { mutableStateOf(false) }
     val isLoaded = state.monthlyLimit > 0.0 || state.isSetupDone
     if (!isLoaded) return
@@ -73,7 +75,13 @@ fun DashboardScreen(
             ),
             windowInsets = WindowInsets(0, 0, 0, 0)
         )
-
+        selectedExpenseForEdit?.let { expense ->
+            EditExpenseDialog(
+                expense = expense,
+                onDismiss = { selectedExpenseForEdit = null },
+                onUpdate = { updated -> viewModel.updateExpense(updated) }
+            )
+        }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -131,7 +139,8 @@ fun DashboardScreen(
                 items(state.todayExpenses, key = { it.id }) { expense ->
                     ExpenseItem(
                         expense = expense,
-                        onDelete = { viewModel.deleteExpense(expense) }
+                        onDelete = { viewModel.deleteExpense(expense) },
+                        onEdit = { selectedExpenseForEdit = expense }
                     )
                 }
             }

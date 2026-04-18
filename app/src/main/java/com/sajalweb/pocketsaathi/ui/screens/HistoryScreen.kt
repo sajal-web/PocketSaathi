@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sajalweb.pocketsaathi.data.model.Expense
 import com.sajalweb.pocketsaathi.ui.components.ExpenseItem
 import com.sajalweb.pocketsaathi.ui.theme.Primary
 import com.sajalweb.pocketsaathi.ui.theme.TextPrimary
@@ -30,6 +31,7 @@ fun HistoryScreen(
     onBack: () -> Unit
 ) {
     val state by viewModel.dashboardState.collectAsStateWithLifecycle()
+    var selectedExpenseForEdit by remember { mutableStateOf<Expense?>(null) }
 
     // Group all expenses by date
     val grouped = remember(state.recentExpenses) {
@@ -105,7 +107,13 @@ fun HistoryScreen(
             }
             return@Column
         }
-
+        selectedExpenseForEdit?.let { expense ->
+            EditExpenseDialog(
+                expense = expense,
+                onDismiss = { selectedExpenseForEdit = null },
+                onUpdate = { updated -> viewModel.updateExpense(updated) }
+            )
+        }
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
@@ -151,7 +159,8 @@ fun HistoryScreen(
                 items(expenses, key = { it.id }) { expense ->
                     ExpenseItem(
                         expense = expense,
-                        onDelete = { viewModel.deleteExpense(expense) }
+                        onDelete = { viewModel.deleteExpense(expense) },
+                        onEdit = { selectedExpenseForEdit = expense }
                     )
                 }
 

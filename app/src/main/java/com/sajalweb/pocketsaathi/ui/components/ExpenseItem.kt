@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.ui.unit.sp
 import com.sajalweb.pocketsaathi.data.model.Expense
 import com.sajalweb.pocketsaathi.ui.theme.Primary
@@ -31,7 +32,8 @@ import java.util.*
 @Composable
 fun ExpenseItem(
     expense: Expense,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
@@ -72,12 +74,15 @@ fun ExpenseItem(
             }
         }
     ) {
-        ExpenseCard(expense = expense)
+        ExpenseCard(
+            expense = expense,
+            onEdit = onEdit
+        )
     }
 }
 
 @Composable
-private fun ExpenseCard(expense: Expense) {
+private fun ExpenseCard(expense: Expense,onEdit: () -> Unit) {
     val timeFormat = remember { SimpleDateFormat("h:mm a", Locale.getDefault()) }
     val timeStr = remember(expense.timestamp) {
         timeFormat.format(Date(expense.timestamp))
@@ -148,14 +153,25 @@ private fun ExpenseCard(expense: Expense) {
                     )
                 }
             }
+            // Right side: amount + edit button
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "₹${"%.0f".format(expense.amount)}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit expense",
+                        tint = TextSecondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
 
-            // Amount
-            Text(
-                text = "₹${"%.0f".format(expense.amount)}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
+
         }
     }
 }
