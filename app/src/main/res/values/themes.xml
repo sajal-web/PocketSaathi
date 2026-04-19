@@ -2,4 +2,15 @@
 <resources>
 
     <style name="Theme.PocketSaathi" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Splash screen theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Set the background color (matches your app's primary or surface) -->
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <!-- Set an icon (drawable) to display in the center -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
+        <!-- How long the icon remains after animation (keep as default) -->
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <!-- Post-splash theme (the one your app actually uses) -->
+        <item name="postSplashScreenTheme">@style/Theme.PocketSaathi</item>
+    </style>
 </resources>

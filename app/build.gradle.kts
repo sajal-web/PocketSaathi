@@ -20,7 +20,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -74,6 +75,8 @@ dependencies {
     // Charts
     implementation(libs.com.patrykandpatrick.vico.compose.m3)
 
+    // Splash screen
+    implementation(libs.androidx.core.splashscreen)
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

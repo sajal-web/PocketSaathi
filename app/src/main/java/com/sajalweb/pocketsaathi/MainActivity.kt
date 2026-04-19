@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -17,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -26,15 +28,37 @@ import com.sajalweb.pocketsaathi.ui.screens.AddExpenseSheet
 import com.sajalweb.pocketsaathi.ui.screens.DashboardScreen
 import com.sajalweb.pocketsaathi.ui.screens.HistoryScreen
 import com.sajalweb.pocketsaathi.ui.theme.SpendSenseTheme
+import com.sajalweb.pocketsaathi.ui.viewmodel.ExpenseViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val viewModel: ExpenseViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 1. Install splash screen
+        val splashScreen = installSplashScreen()
+
+        // 2. Keep splash screen until data is loaded
+        var keepSplash = true
+        splashScreen.setKeepOnScreenCondition { keepSplash }
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             SpendSenseTheme {
+                // Collect the state first
+                val dashboardState by viewModel.dashboardState.collectAsState()
+                val isDataLoaded = dashboardState.isDataLoaded
+
+                // Once data is loaded, allow splash to exit
+                LaunchedEffect(isDataLoaded) {
+                    if (isDataLoaded) {
+                        keepSplash = false
+                    }
+                }
+
                 SpendSenseApp()
             }
         }
@@ -96,7 +120,7 @@ fun SpendSenseApp() {
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
-            Log.d(paddingValues.toString(), "DashboardScreen")
+            Log.d("MainActivity", "PaddingValues: $paddingValues")
             composable(Screen.Dashboard.route) {
                 DashboardScreen(
                     modifier = Modifier,
