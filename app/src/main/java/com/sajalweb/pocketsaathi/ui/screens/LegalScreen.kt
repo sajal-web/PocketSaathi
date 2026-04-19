@@ -48,19 +48,19 @@ fun LegalDialog(onDismiss: () -> Unit) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TextButton(onClick = {
-                    openUrl("https://github.com/sajal-web/pdfcompressor-privacy/")
+                    openUrl("https://sajal-web.github.io/PocketSaathi/#privacy")
                 }) {
                     Text("Privacy Policy")
                 }
 
                 TextButton(onClick = {
-                    openUrl("https://github.com/sajal-web/pdfcompressor-privacy/")
+                    openUrl("https://sajal-web.github.io/PocketSaathi/#disclaimer")
                 }) {
                     Text("Disclaimer")
                 }
 
                 TextButton(onClick = {
-                    openUrl("https://github.com/sajal-web/pdfcompressor-privacy/")
+                    openUrl("https://sajal-web.github.io/PocketSaathi/#eula")
                 }) {
                     Text("Terms & Conditions (EULA)")
                 }

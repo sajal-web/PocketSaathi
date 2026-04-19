@@ -53,7 +53,6 @@ fun SpendSenseApp() {
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surface,
                 tonalElevation = 0.dp,
-                windowInsets = WindowInsets(0, 0, 0, 0)
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
