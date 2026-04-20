@@ -12,6 +12,7 @@ import com.sajalweb.pocketsaathi.data.repository.ExpenseRepository
 import com.sajalweb.pocketsaathi.domain.BudgetCalculator
 import com.sajalweb.pocketsaathi.domain.Insight
 import com.sajalweb.pocketsaathi.domain.InsightEngine
+import com.sajalweb.pocketsaathi.domain.RecentExpense
 import com.sajalweb.pocketsaathi.domain.SmartParser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -108,10 +109,22 @@ class ExpenseViewModel @Inject constructor(
         }
         val avgSpend    = repository.getAvgDailySpend() ?: 0.0
 
-        val daysInMonth  = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
-        val weekBudget   = dailyBudget * 7
-        val monthBudget  = dailyBudget * daysInMonth
-        val yearBudget   = monthBudget * 12
+        val recentForStreak = recent.map { expense ->
+            val cal = Calendar.getInstance().apply { timeInMillis = expense.timestamp }
+            RecentExpense(
+                dateKey = "${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH)}-${cal.get(Calendar.DAY_OF_MONTH)}",
+                amount = expense.amount
+            )
+        }
+
+        val topCategory = todayExpenses
+            .groupBy { it.category }
+            .mapValues { (_, expenses) -> expenses.sumOf { it.amount } }
+            .maxByOrNull { it.value }
+
+        val daysInMonth = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
+        val weekBudget  = dailyBudget * 7
+        val monthBudget = dailyBudget * daysInMonth
 
         DashboardUiState(
             todayTotal        = todayTotal,
@@ -125,8 +138,26 @@ class ExpenseViewModel @Inject constructor(
             yearTotal         = yearTotal,
             todayExpenses     = todayExpenses,
             recentExpenses    = recent,
-            healthScore       = insightEngine.getHealthScore(todayTotal, dailyBudget, avgSpend),
-            insights          = insightEngine.getInsights(todayTotal, dailyBudget, avgSpend, weekTotal),
+            healthScore = insightEngine.getHealthScore(
+                todaySpent    = todayTotal,
+                dailyBudget   = dailyBudget,
+                avgDailySpend = avgSpend,
+                weekTotal     = weekTotal,
+                weekBudget    = weekBudget
+            ),
+            insights = insightEngine.getInsights(
+                todaySpent            = todayTotal,
+                dailyBudget           = dailyBudget,
+                avgDailySpend         = avgSpend,
+                weekTotal             = weekTotal,
+                weekBudget            = weekBudget,
+                monthTotal            = monthTotal,
+                monthBudget           = monthBudget,
+                topCategoryName       = topCategory?.key?.label ?: "",
+                topCategoryAmount     = topCategory?.value ?: 0.0,
+                totalTransactionsToday = todayExpenses.size,
+                recentExpenses        = recentForStreak
+            ),
             isSetupDone       = setupDone,
             weeklyBreakdown   = weekly,
             isDataLoaded      = true,
@@ -190,6 +221,15 @@ class ExpenseViewModel @Inject constructor(
             isSaved         = isSaved,
             insightMessage  = insightMessage
         )
+    }
+
+    fun resetAllData() {
+        viewModelScope.launch {
+            // Clear all expenses
+            repository.resetAllData()
+            // Reset preferences (clear setup flag and budget config)
+            prefs.resetAll()
+        }
     }
 
     fun selectReportType(type: ReportType) {

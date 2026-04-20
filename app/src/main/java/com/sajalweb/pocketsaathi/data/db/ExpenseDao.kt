@@ -50,6 +50,9 @@ interface ExpenseDao {
 
     @Query("SELECT SUM(amount) FROM expenses WHERE timestamp >= :startOfYear")
     fun getYearTotal(startOfYear: Long): Flow<Double?>
+
+    @Query("DELETE FROM expenses")
+    suspend fun deleteAllExpenses()
 }
 
 data class DayTotal(val dayOfWeek: String, val total: Double)

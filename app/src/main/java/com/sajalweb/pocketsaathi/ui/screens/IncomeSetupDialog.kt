@@ -21,6 +21,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.sajalweb.pocketsaathi.ui.theme.Primary
 import com.sajalweb.pocketsaathi.ui.theme.TextPrimary
 import com.sajalweb.pocketsaathi.ui.theme.TextSecondary
+import com.sajalweb.pocketsaathi.utils.getTodayStartMillis
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -34,12 +35,20 @@ fun IncomeSetupDialog(
     var errorMsg by remember { mutableStateOf("") }
 
     // Date range state
-    val today = Calendar.getInstance()
+    val todayStart = getTodayStartMillis()
     val defaultEnd = Calendar.getInstance().apply {
         set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
+    }.timeInMillis
+
+    // Ensure startDate is not before today
+    var startDate by remember {
+        mutableStateOf(
+            if (todayStart > todayStart) todayStart else todayStart // always today initially
+        )
     }
-    var startDate by remember { mutableStateOf(today.timeInMillis) }
-    var endDate by remember { mutableStateOf(defaultEnd.timeInMillis) }
+    var endDate by remember {
+        mutableStateOf(if (defaultEnd < todayStart) todayStart else defaultEnd)
+    }
 
     var showStartDatePicker by remember { mutableStateOf(false) }
     var showEndDatePicker by remember { mutableStateOf(false) }
@@ -59,7 +68,7 @@ fun IncomeSetupDialog(
             initialSelectedDateMillis = startDate,
             selectableDates = object : SelectableDates {
                 override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                    return utcTimeMillis <= endDate
+                    return utcTimeMillis in todayStart..endDate
                 }
             }
         )
@@ -88,11 +97,12 @@ fun IncomeSetupDialog(
     }
 
     if (showEndDatePicker) {
+        val minEnd = maxOf(todayStart, startDate)
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis = endDate,
             selectableDates = object : SelectableDates {
                 override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                    return utcTimeMillis >= startDate
+                    return utcTimeMillis >= minEnd
                 }
             }
         )
@@ -117,6 +127,13 @@ fun IncomeSetupDialog(
             }
         ) {
             DatePicker(state = datePickerState)
+        }
+    }
+
+    // When start date changes, ensure end date is not before start date
+    LaunchedEffect(startDate) {
+        if (endDate < startDate) {
+            endDate = startDate
         }
     }
 

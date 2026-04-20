@@ -38,7 +38,7 @@ class ExpenseRepository @Inject constructor(
     suspend fun addExpense(expense: Expense) = dao.insert(expense)
     suspend fun updateExpense(expense: Expense) = dao.update(expense)
     suspend fun deleteExpense(expense: Expense) = dao.delete(expense)
-
+    suspend fun resetAllData() { dao.deleteAllExpenses() }
     private fun todayRange(): Pair<Long, Long> {
         val cal = Calendar.getInstance()
         cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0)

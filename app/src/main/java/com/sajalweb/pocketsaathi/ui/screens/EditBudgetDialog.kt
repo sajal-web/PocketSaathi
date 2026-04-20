@@ -20,6 +20,7 @@ import com.sajalweb.pocketsaathi.ui.theme.Primary
 import com.sajalweb.pocketsaathi.ui.theme.TextPrimary
 import com.sajalweb.pocketsaathi.ui.theme.TextSecondary
 import com.sajalweb.pocketsaathi.utils.formatAmount
+import com.sajalweb.pocketsaathi.utils.getTodayStartMillis
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -38,8 +39,15 @@ fun EditBudgetDialog(
     var errorMsg by remember { mutableStateOf("") }
 
     // Date range state
-    var startDate by remember { mutableStateOf(currentStartDate) }
-    var endDate by remember { mutableStateOf(currentEndDate) }
+    val todayStart = getTodayStartMillis()
+
+    // Ensure start date is not in the past
+    var startDate by remember {
+        mutableStateOf(if (currentStartDate < todayStart) todayStart else currentStartDate)
+    }
+    var endDate by remember {
+        mutableStateOf(if (currentEndDate < todayStart) todayStart else currentEndDate)
+    }
     var showStartDatePicker by remember { mutableStateOf(false) }
     var showEndDatePicker by remember { mutableStateOf(false) }
 
@@ -57,7 +65,7 @@ fun EditBudgetDialog(
             initialSelectedDateMillis = startDate,
             selectableDates = object : SelectableDates {
                 override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                    return utcTimeMillis <= endDate
+                    return utcTimeMillis in todayStart..endDate
                 }
             }
         )
@@ -86,11 +94,12 @@ fun EditBudgetDialog(
     }
 
     if (showEndDatePicker) {
+        val minEnd = maxOf(todayStart, startDate)
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis = endDate,
             selectableDates = object : SelectableDates {
                 override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                    return utcTimeMillis >= startDate
+                    return utcTimeMillis >= minEnd
                 }
             }
         )
@@ -115,6 +124,13 @@ fun EditBudgetDialog(
             }
         ) {
             DatePicker(state = datePickerState)
+        }
+    }
+
+    // When start date changes, adjust end date if needed
+    LaunchedEffect(startDate) {
+        if (endDate < startDate) {
+            endDate = startDate
         }
     }
 

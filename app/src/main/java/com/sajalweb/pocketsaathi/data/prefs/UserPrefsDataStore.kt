@@ -61,6 +61,9 @@ class UserPrefsDataStore(private val context: Context) {
     suspend fun saveReportType(type: ReportType) {
         context.dataStore.edit { it[SELECTED_REPORT_TYPE] = type.name }
     }
+    suspend fun resetAll() {
+        context.dataStore.edit { it.clear() }
+    }
 
     val budgetStartDate: Flow<Long> = context.dataStore.data
         .catch { emit(emptyPreferences()) }
@@ -69,4 +72,4 @@ class UserPrefsDataStore(private val context: Context) {
     val budgetEndDate: Flow<Long> = context.dataStore.data
         .catch { emit(emptyPreferences()) }
         .map { it[BUDGET_END_DATE] ?: 0L }
-}
+    }

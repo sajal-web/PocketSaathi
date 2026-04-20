@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,6 +42,8 @@ fun DashboardScreen(
     var selectedDayIndex by remember { mutableStateOf<Int?>(null) }
     var showLegalDialog by remember { mutableStateOf(false) }
     val todayIndex = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1
+    var showResetDialog by remember { mutableStateOf(false) }
+
 
     val displayTodaySpent = remember(state.weeklyBreakdown, selectedDayIndex, state.todayTotal) {
         if (selectedDayIndex == null) {
@@ -86,6 +89,23 @@ fun DashboardScreen(
                 }
                 IconButton(onClick = { showEditBudgetDialog = true }) {
                     Icon(Icons.Default.Edit, contentDescription = "Edit Budget")
+                }
+                // Add overflow menu
+                var showMenu by remember { mutableStateOf(false) }
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "More")
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Reset All Data") },
+                        onClick = {
+                            showMenu = false
+                            showResetDialog = true
+                        }
+                    )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -176,6 +196,31 @@ fun DashboardScreen(
                 }
             }
         }
+    }
+
+    // Show confirmation dialog
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            title = { Text("Reset All Data?") },
+            text = { Text("This will permanently delete all expenses and budget settings. This action cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.resetAllData()
+                        showResetDialog = false
+                        // The UI will automatically show IncomeSetupDialog because isSetupDone becomes false
+                    }
+                ) {
+                    Text("Reset", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     if (showLegalDialog) {
