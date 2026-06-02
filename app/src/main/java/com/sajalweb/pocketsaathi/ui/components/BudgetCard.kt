@@ -54,25 +54,28 @@ fun BudgetCard(
         label = "budget_arc"
     )
 
+    val trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val surfaceColor = MaterialTheme.colorScheme.surfaceVariant
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        colors = CardDefaults.cardColors(containerColor = surfaceColor),
         shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(Modifier.padding(24.dp)) {
-            Text("Daily Budget", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
+            Text("Daily Budget", style = MaterialTheme.typography.labelLarge, color = labelColor)
             Spacer(Modifier.height(16.dp))
 
             // Circular arc progress
             Box(Modifier.size(160.dp).align(Alignment.CenterHorizontally)) {
                 Canvas(Modifier.fillMaxSize()) {
                     val strokeWidth = 18.dp.toPx()
-                    val radius = (size.minDimension - strokeWidth) / 2
-                    val center = Offset(size.width / 2, size.height / 2)
 
                     // Track
-                    drawArc(color = Color.LightGray.copy(alpha = 0.3f),
+                    drawArc(color = trackColor,
                         startAngle = 135f, sweepAngle = 270f, useCenter = false,
                         style = Stroke(strokeWidth, cap = StrokeCap.Round)
                     )
@@ -84,19 +87,19 @@ fun BudgetCard(
                 }
                 Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("₹${remaining.toInt()}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = color)
-                    Text("remaining", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text("remaining", style = MaterialTheme.typography.bodySmall, color = labelColor)
                 }
             }
 
             Spacer(Modifier.height(16.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column {
-                    Text("Spent today", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
+                    Text("Spent today", style = MaterialTheme.typography.labelMedium, color = labelColor)
                     Text("₹${todaySpent.toInt()}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("Daily limit", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
-                    Text("₹${dailyBudget.toInt()}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, color = Primary)
+                    Text("Daily limit", style = MaterialTheme.typography.labelMedium, color = labelColor)
+                    Text("₹${dailyBudget.toInt()}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, color = primaryColor)
                 }
             }
         }

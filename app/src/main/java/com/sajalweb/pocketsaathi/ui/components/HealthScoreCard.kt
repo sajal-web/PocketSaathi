@@ -40,11 +40,15 @@ fun HealthScoreCard(score: Int) {
         else -> "Over Budget"
     }
 
+    val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+    val trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        colors = CardDefaults.cardColors(containerColor = surfaceVariant),
         shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
             modifier = Modifier
@@ -57,7 +61,7 @@ fun HealthScoreCard(score: Int) {
                 Text(
                     text = "Money Health",
                     style = MaterialTheme.typography.labelLarge,
-                    color = TextSecondary
+                    color = onSurfaceVariant
                 )
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
@@ -70,7 +74,7 @@ fun HealthScoreCard(score: Int) {
                     Text(
                         text = " / 100",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary,
+                        color = onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 6.dp)
                     )
                 }
@@ -98,7 +102,7 @@ fun HealthScoreCard(score: Int) {
                     val sweep = (animatedScore / 100f) * 270f
 
                     drawArc(
-                        color = Color.LightGray.copy(alpha = 0.25f),
+                        color = trackColor,
                         startAngle = 135f,
                         sweepAngle = 270f,
                         useCenter = false,
@@ -130,7 +134,7 @@ fun HealthScoreCard(score: Int) {
                 progress = { animatedScore / 100f },
                 modifier = Modifier.fillMaxWidth().height(6.dp),
                 color = scoreColor,
-                trackColor = Color.LightGray.copy(alpha = 0.25f),
+                trackColor = trackColor,
                 strokeCap = StrokeCap.Round
             )
         }

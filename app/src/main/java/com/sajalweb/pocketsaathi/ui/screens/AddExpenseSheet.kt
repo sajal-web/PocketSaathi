@@ -77,7 +77,7 @@ fun AddExpenseSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {
         Column(Modifier.padding(horizontal = 20.dp, vertical = 8.dp).navigationBarsPadding()) {
@@ -89,14 +89,14 @@ fun AddExpenseSheet(
                 value = state.inputText,
                 onValueChange = viewModel::onInputChanged,
                 modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
-                placeholder = { Text("e.g. 250 or paid 250 for food", color = TextSecondary) },
+                placeholder = { Text("e.g. 250 or paid 250 for food", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 label = { Text("Amount or description") },
                 shape = RoundedCornerShape(16.dp),
                 singleLine = false,
                 maxLines = 2,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Primary,
-                    focusedLabelColor = Primary
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary
                 )
             )
 
@@ -105,10 +105,12 @@ fun AddExpenseSheet(
                 val displayAmount = effectiveAmount
                 val displayCategory = selectedCategory ?: state.parsed?.category ?: Category.OTHERS
                 val displayDescription = state.parsed?.description?.ifEmpty { "Expense" } ?: "Expense"
+                val primaryColor = MaterialTheme.colorScheme.primary
+                val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
 
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Primary.copy(alpha = 0.08f)),
+                    colors = CardDefaults.cardColors(containerColor = primaryColor.copy(alpha = 0.08f)),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -116,11 +118,11 @@ fun AddExpenseSheet(
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
                             Text(displayDescription, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-                            Text(displayCategory.label, style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                            Text(displayCategory.label, style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
                         }
                         if (displayAmount != null) {
                             Text("₹${displayAmount.toInt()}", style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold, color = Primary)
+                                fontWeight = FontWeight.Bold, color = primaryColor)
                         }
                     }
                 }
@@ -129,18 +131,20 @@ fun AddExpenseSheet(
             Spacer(Modifier.height(12.dp))
 
             // Category quick-select chips
-            Text("Category", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
+            Text("Category", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(Category.entries.toTypedArray()) { cat ->
                     val isSelected = (selectedCategory ?: state.parsed?.category) == cat
+                    val primaryColor = MaterialTheme.colorScheme.primary
+
                     FilterChip(
                         selected = isSelected,
                         onClick = { selectedCategory = cat },
                         label = { Text("${cat.emoji} ${cat.label}") },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Primary.copy(alpha = 0.15f),
-                            selectedLabelColor = Primary
+                            selectedContainerColor = primaryColor.copy(alpha = 0.15f),
+                            selectedLabelColor = primaryColor
                         )
                     )
                 }
@@ -159,7 +163,7 @@ fun AddExpenseSheet(
                 enabled = canSave,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text("Save ₹${effectiveAmount?.toInt() ?: ""}", style = MaterialTheme.typography.titleMedium)
             }

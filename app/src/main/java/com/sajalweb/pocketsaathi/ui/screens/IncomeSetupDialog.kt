@@ -142,9 +142,14 @@ fun IncomeSetupDialog(
         onDismissRequest = {},
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
     ) {
+        val primaryColor = MaterialTheme.colorScheme.primary
+        val onSurface = MaterialTheme.colorScheme.onSurface
+        val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+        val surfaceColor = MaterialTheme.colorScheme.surface
+
         Card(
             shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = surfaceColor),
             elevation = CardDefaults.cardElevation(0.dp)
         ) {
             Column(
@@ -159,13 +164,13 @@ fun IncomeSetupDialog(
                     text = "Set Monthly Spending Limit",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = onSurface
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
                     text = "How much can you spend in a month? We'll split it into daily budget.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary,
+                    color = onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     lineHeight = 20.sp
                 )
@@ -180,14 +185,14 @@ fun IncomeSetupDialog(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Monthly Limit (₹)") },
                     placeholder = { Text("e.g. 30000") },
-                    prefix = { Text("₹ ", fontWeight = FontWeight.SemiBold, color = Primary) },
+                    prefix = { Text("₹ ", fontWeight = FontWeight.SemiBold, color = primaryColor) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     isError = errorMsg.isNotEmpty(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Primary,
-                        focusedLabelColor = Primary
+                        focusedBorderColor = primaryColor,
+                        focusedLabelColor = primaryColor
                     )
                 )
 
@@ -208,7 +213,7 @@ fun IncomeSetupDialog(
                 Text(
                     text = "Budget period",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = onSurfaceVariant
                 )
                 Spacer(Modifier.height(8.dp))
 
@@ -218,10 +223,10 @@ fun IncomeSetupDialog(
                 ) {
                     // Start date
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Start", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text("Start", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = Primary.copy(alpha = 0.08f),
+                            color = primaryColor.copy(alpha = 0.08f),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { showStartDatePicker = true }
@@ -231,16 +236,16 @@ fun IncomeSetupDialog(
                                 modifier = Modifier.padding(12.dp),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium,
-                                color = Primary
+                                color = primaryColor
                             )
                         }
                     }
                     // End date
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("End", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text("End", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = Primary.copy(alpha = 0.08f),
+                            color = primaryColor.copy(alpha = 0.08f),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { showEndDatePicker = true }
@@ -250,7 +255,7 @@ fun IncomeSetupDialog(
                                 modifier = Modifier.padding(12.dp),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium,
-                                color = Primary
+                                color = primaryColor
                             )
                         }
                     }
@@ -262,7 +267,7 @@ fun IncomeSetupDialog(
                 Text(
                     text = "What percentage of this limit should be your daily spending budget?",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = onSurfaceVariant
                 )
                 Spacer(Modifier.height(8.dp))
 
@@ -271,18 +276,18 @@ fun IncomeSetupDialog(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("0%", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                    Text("0%", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
                     Slider(
                         value = percentage.toFloat(),
                         onValueChange = { percentage = it.toInt() },
                         valueRange = 1f..100f,
                         colors = SliderDefaults.colors(
-                            thumbColor = Primary,
-                            activeTrackColor = Primary
+                            thumbColor = primaryColor,
+                            activeTrackColor = primaryColor
                         ),
                         modifier = Modifier.weight(1f)
                     )
-                    Text("100%", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                    Text("100%", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -290,13 +295,13 @@ fun IncomeSetupDialog(
                 ) {
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = Primary.copy(alpha = 0.1f)
+                        color = primaryColor.copy(alpha = 0.1f)
                     ) {
                         Text(
                             text = "$percentage%",
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
                             fontWeight = FontWeight.Bold,
-                            color = Primary
+                            color = primaryColor
                         )
                     }
                 }
@@ -308,7 +313,7 @@ fun IncomeSetupDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                Primary.copy(alpha = 0.08f),
+                                primaryColor.copy(alpha = 0.08f),
                                 RoundedCornerShape(12.dp)
                             )
                             .padding(14.dp),
@@ -317,18 +322,18 @@ fun IncomeSetupDialog(
                         Text(
                             text = "Your daily budget will be",
                             style = MaterialTheme.typography.labelMedium,
-                            color = TextSecondary
+                            color = onSurfaceVariant
                         )
                         Text(
                             text = "₹${"%.0f".format(dailyBudget)} / day",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Primary
+                            color = primaryColor
                         )
                         Text(
                             text = "($percentage% of ₹${"%.0f".format(monthlyLimit ?: 0.0)} over $daysInPeriod days)",
                             style = MaterialTheme.typography.labelSmall,
-                            color = TextSecondary
+                            color = onSurfaceVariant
                         )
                     }
                 }
@@ -365,7 +370,7 @@ fun IncomeSetupDialog(
                         .fillMaxWidth()
                         .height(52.dp),
                     shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                    colors = ButtonDefaults.buttonColors(containerColor = primaryColor)
                 ) {
                     Text("Let's Go →", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 }

@@ -41,11 +41,16 @@ fun WeeklySummaryCard(
 
     val maxAmount = dailyAmounts.maxOrNull()?.takeIf { it > 0 } ?: 1.0
 
+    val cardBg = MaterialTheme.colorScheme.surfaceVariant
+    val textPrimary = MaterialTheme.colorScheme.onSurface
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val primaryColor = MaterialTheme.colorScheme.primary
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        colors = CardDefaults.cardColors(containerColor = cardBg),
         shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(
@@ -53,22 +58,22 @@ fun WeeklySummaryCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
-                    Text("This Week", color = TextSecondary)
+                    Text("This Week", color = textSecondary)
                     Text(
                         "₹${"%.0f".format(weekTotal)}",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+                        color = textPrimary
                     )
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("This Month", color = TextSecondary)
+                    Text("This Month", color = textSecondary)
                     Text(
                         "₹${"%.0f".format(monthTotal)}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = Primary
+                        color = primaryColor
                     )
                 }
             }
@@ -79,7 +84,7 @@ fun WeeklySummaryCard(
                     text = "${dayLabels[index]}: ₹${"%.0f".format(amount)}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Primary,
+                    color = primaryColor,
                     modifier = Modifier.padding(top = 12.dp)
                 )
             }
@@ -114,7 +119,7 @@ fun WeeklySummaryCard(
                             Text(
                                 text = "₹${"%.0f".format(amount)}",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Primary,
+                                color = primaryColor,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
@@ -127,9 +132,9 @@ fun WeeklySummaryCard(
                         ) {
                             drawRoundRect(
                                 color = when {
-                                    isSelected -> Primary
-                                    isToday -> Primary.copy(alpha = 0.6f)
-                                    else -> Primary.copy(alpha = 0.25f)
+                                    isSelected -> primaryColor
+                                    isToday -> primaryColor.copy(alpha = 0.6f)
+                                    else -> primaryColor.copy(alpha = 0.25f)
                                 },
                                 size = size,
                                 cornerRadius = CornerRadius(6.dp.toPx())
@@ -142,9 +147,9 @@ fun WeeklySummaryCard(
                             text = dayLabels[index].take(1),
                             style = MaterialTheme.typography.labelSmall,
                             color = when {
-                                isSelected -> Primary
-                                isToday -> Primary.copy(alpha = 0.7f)
-                                else -> TextSecondary
+                                isSelected -> primaryColor
+                                isToday -> primaryColor.copy(alpha = 0.7f)
+                                else -> textSecondary
                             },
                             fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal
                         )

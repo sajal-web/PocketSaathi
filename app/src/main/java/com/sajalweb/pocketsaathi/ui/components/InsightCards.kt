@@ -87,7 +87,7 @@ private fun InsightRow(insight: Insight) {
                 Text(
                     text = insight.message,
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextPrimary.copy(alpha = 0.75f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
                     lineHeight = 18.sp
                 )
             }

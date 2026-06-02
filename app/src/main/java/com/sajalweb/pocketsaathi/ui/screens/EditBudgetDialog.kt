@@ -137,7 +137,7 @@ fun EditBudgetDialog(
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(0.dp)
         ) {
             Column(
@@ -152,7 +152,7 @@ fun EditBudgetDialog(
                     text = "Edit Monthly Budget",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(Modifier.height(8.dp))
 
@@ -165,14 +165,14 @@ fun EditBudgetDialog(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Monthly Limit (₹)") },
                     placeholder = { Text("e.g. 30000") },
-                    prefix = { Text("₹ ", fontWeight = FontWeight.SemiBold, color = Primary) },
+                    prefix = { Text("₹ ", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     isError = errorMsg.isNotEmpty(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Primary,
-                        focusedLabelColor = Primary
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary
                     )
                 )
 
@@ -191,19 +191,22 @@ fun EditBudgetDialog(
                 Text(
                     text = "Budget period",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.height(8.dp))
+
+                val primaryColor = MaterialTheme.colorScheme.primary
+                val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Start", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text("Start", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = Primary.copy(alpha = 0.08f),
+                            color = primaryColor.copy(alpha = 0.08f),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { showStartDatePicker = true }
@@ -213,15 +216,15 @@ fun EditBudgetDialog(
                                 modifier = Modifier.padding(12.dp),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium,
-                                color = Primary
+                                color = primaryColor
                             )
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("End", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text("End", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = Primary.copy(alpha = 0.08f),
+                            color = primaryColor.copy(alpha = 0.08f),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { showEndDatePicker = true }
@@ -231,7 +234,7 @@ fun EditBudgetDialog(
                                 modifier = Modifier.padding(12.dp),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium,
-                                color = Primary
+                                color = primaryColor
                             )
                         }
                     }
@@ -242,7 +245,7 @@ fun EditBudgetDialog(
                 Text(
                     text = "Daily spending percentage",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = onSurfaceVariant
                 )
                 Spacer(Modifier.height(8.dp))
 
@@ -251,18 +254,18 @@ fun EditBudgetDialog(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("0%", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                    Text("0%", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
                     Slider(
                         value = percentage.toFloat(),
                         onValueChange = { percentage = it.toInt() },
                         valueRange = 1f..100f,
                         colors = SliderDefaults.colors(
-                            thumbColor = Primary,
-                            activeTrackColor = Primary
+                            thumbColor = primaryColor,
+                            activeTrackColor = primaryColor
                         ),
                         modifier = Modifier.weight(1f)
                     )
-                    Text("100%", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                    Text("100%", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -270,13 +273,13 @@ fun EditBudgetDialog(
                 ) {
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = Primary.copy(alpha = 0.1f)
+                        color = primaryColor.copy(alpha = 0.1f)
                     ) {
                         Text(
                             text = "$percentage%",
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
                             fontWeight = FontWeight.Bold,
-                            color = Primary
+                            color = primaryColor
                         )
                     }
                 }
@@ -288,7 +291,7 @@ fun EditBudgetDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                Primary.copy(alpha = 0.08f),
+                                primaryColor.copy(alpha = 0.08f),
                                 RoundedCornerShape(12.dp)
                             )
                             .padding(12.dp),
@@ -297,18 +300,18 @@ fun EditBudgetDialog(
                         Text(
                             text = "Your new daily budget will be",
                             style = MaterialTheme.typography.labelMedium,
-                            color = TextSecondary
+                            color = onSurfaceVariant
                         )
                         Text(
                             text = "₹${"%.0f".format(dailyBudget)} / day",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
-                            color = Primary
+                            color = primaryColor
                         )
                         Text(
                             text = "($percentage% of ₹${"%.0f".format(monthlyLimit ?: 0.0)} over $daysInPeriod days)",
                             style = MaterialTheme.typography.labelSmall,
-                            color = TextSecondary
+                            color = onSurfaceVariant
                         )
                     }
                 }
@@ -354,7 +357,7 @@ fun EditBudgetDialog(
                         },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                        colors = ButtonDefaults.buttonColors(containerColor = primaryColor)
                     ) {
                         Text("Save")
                     }

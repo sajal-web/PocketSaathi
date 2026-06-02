@@ -67,7 +67,7 @@ fun HistoryScreen(
                 Text(
                     "Transaction History",
                     fontWeight = FontWeight.SemiBold,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             },
             navigationIcon = {
@@ -75,12 +75,12 @@ fun HistoryScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = TextPrimary
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color(0xFFFFFFFF)
+                containerColor = MaterialTheme.colorScheme.surface
             )
         )
 
@@ -96,12 +96,12 @@ fun HistoryScreen(
                         "No transactions yet",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium,
-                        color = TextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         "Add your first expense from the dashboard",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -145,12 +145,12 @@ fun HistoryScreen(
                             text = formatGroupKey(dateKey),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.SemiBold,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = "₹${"%.0f".format(expenses.sumOf { it.amount })}",
                             style = MaterialTheme.typography.labelLarge,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -191,9 +191,12 @@ private fun SummaryRow(totalCount: Int, totalAmount: Double) {
 
 @Composable
 private fun SummaryChip(label: String, value: String, modifier: Modifier = Modifier) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = Primary.copy(alpha = 0.08f)),
+        colors = CardDefaults.cardColors(containerColor = primaryColor.copy(alpha = 0.08f)),
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
@@ -207,12 +210,12 @@ private fun SummaryChip(label: String, value: String, modifier: Modifier = Modif
                 text = value,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = Primary
+                color = primaryColor
             )
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
+                color = onSurfaceVariant
             )
         }
     }

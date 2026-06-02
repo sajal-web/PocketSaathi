@@ -34,8 +34,8 @@ fun ReportChartCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF2F3FC)),
-        elevation = CardDefaults.cardElevation(0.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -51,7 +51,7 @@ fun ReportChartCard(
                     text = "Report",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Surface(
                     shape = RoundedCornerShape(20.dp),
@@ -114,18 +114,21 @@ private fun ReportTypeToggle(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White.copy(alpha = 0.7f)),
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         ReportType.values().forEach { type ->
             val isSelected = type == selected
+            val primaryColor = MaterialTheme.colorScheme.primary
+            val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .padding(4.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(
-                        if (isSelected) Primary else Color.Transparent
+                        if (isSelected) primaryColor else Color.Transparent
                     ),
                 contentAlignment = Alignment.Center
             ) {
@@ -138,7 +141,7 @@ private fun ReportTypeToggle(
                         text = type.label,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                        color = if (isSelected) Color.White else TextSecondary
+                        color = if (isSelected) Color.White else onSurfaceVariant
                     )
                 }
             }
@@ -172,7 +175,7 @@ private fun ReportBarChart(report: ReportUiState) {
     )
 
     val spendColor  = if (report.isSaved) GreenPositive else RedWarning
-    val budgetColor = Primary
+    val budgetColor = MaterialTheme.colorScheme.primary
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         // Spending bar
@@ -202,6 +205,9 @@ private fun BarRow(
     barColor: Color,
     trackColor: Color
 ) {
+    val textPrimary = MaterialTheme.colorScheme.onSurface
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
+
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -210,13 +216,13 @@ private fun BarRow(
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
+                color = textSecondary
             )
             Text(
                 text = value,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
-                color = TextPrimary
+                color = textPrimary
             )
         }
         Box(
@@ -270,7 +276,7 @@ private fun ReportStatRow(report: ReportUiState) {
         ReportStatChip(
             label = "Budget",
             value = "₹${"%.0f".format(report.budgetLimit)}",
-            valueColor = Primary,
+            valueColor = MaterialTheme.colorScheme.primary,
             modifier = Modifier.weight(1f)
         )
     }
@@ -283,10 +289,13 @@ private fun ReportStatChip(
     valueColor: Color,
     modifier: Modifier = Modifier
 ) {
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
-        color = Color.White.copy(alpha = 0.8f),
+        color = surfaceColor.copy(alpha = 0.8f),
         tonalElevation = 0.dp
     ) {
         Column(
@@ -306,7 +315,7 @@ private fun ReportStatChip(
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary,
+                color = onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
         }
